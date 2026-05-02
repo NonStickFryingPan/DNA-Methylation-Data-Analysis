@@ -151,8 +151,6 @@ We soak the DNA in Sodium Bisulfite. This chemical is "aggressive" toward **unpr
 - **Rule 1:** If a **C** is "naked" (unmethylated), the chemical attacks it and turns it into a **U** (which the sequencer reads as a **T**).
 - **Rule 2:** If a **C** has a "shield" (a methyl tag), the chemical can't hurt it. It stays a **C**.
 
----
-
 #### The Result
 Look at what happens to those two strands after the treatment:
 1. **Imagine this is the strand:** `G - A - C - T`
