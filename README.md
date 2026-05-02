@@ -84,7 +84,9 @@ A CpG site is a specific location in DNA where a cytosine (C) is directly follow
 
 > These sites are important because they are the primary places where DNA methylation occurs.
 
-At a CpG site, the cytosine can receive a methyl group, which can influence whether nearby genes are active or silent. In this way, CpG sites function like regulatory checkpoints in the genome, helping control gene expression. When scientists study a methylome, they are essentially scanning across all CpG sites for hyper- or hypomethylation.
+At a CpG site, the cytosine can receive a methyl group, which can influence whether nearby genes are active or silent. In this way, CpG sites function like regulatory checkpoints in the genome, helping control gene expression.
+
+> When scientists study a methylome, they are essentially scanning across all CpG sites for hyper- or hypomethylation.
 
 ### "Hierarchical Clustering of Breast Cancer Methylomes"?
 This means grouping breast cancer patients by how similar their DNA methylation patterns are.
