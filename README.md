@@ -13,7 +13,7 @@
 
 ## Overview
 
-In this repository, we explore the world of epigenetics through a dual-lens approach. First, we perform a hands-on [Galaxy tutorial](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/methylation-seq/tutorial.html) to process raw Whole Genome Bisulfite Sequencing (WGBS) data. Second, we utilize the [bio-learn](https://bio-learn.github.io/) library to benchmark eight epigenetic aging clocks across two comprehensive EPIC array blood methylation datasets. Our analysis includes correlation matrices, age deviation heatmaps, predicted versus chronological age plots, and MAE (Mean Absolute Error) comparisons.
+In this repo, we explore epigenetics via a hands-on [Galaxy tutorial](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/methylation-seq/tutorial.html) and then we use [EPIC Array (bio-learn)](https://bio-learn.github.io/) to benchmark 8 epigenetic aging clocks across two EPIC array blood methylation datasets, including correlation matrices, age deviation heatmaps, predicted versus chronological age plots, MAE comparisons, and predicted age distribution analyses.
 
 ## What is Epigenetics?
 
