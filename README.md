@@ -1,4 +1,4 @@
-<img width="225" height="94" alt="{A8595975-3897-4908-A320-0872F5259F67}" src="https://github.com/user-attachments/assets/d1625180-a95d-4f9f-bab3-2db4ada12be9" /><div align="center">
+<div align="center">
 
 # 🧬 Epigenetic Aging & Methylome Analysis
 **Benchmarking aging clocks and processing WGBS data via Galaxy and Bio-learn**
@@ -33,12 +33,16 @@ DNA methylation, histone modifications, and chromatin remodeling are all mechani
 The Whole Genome Bisulfite Sequencing pipeline was applied to breast cancer and normal breast tissue samples from Lin et al. (2015), processed through the Galaxy Training Network methylation-seq tutorial. 
 
 #### QC Result
+
 <img width="700" alt="image" src="https://github.com/user-attachments/assets/24a7f822-1566-4303-9da4-ac861888c802" />
+
 During the Quality Control phase using FastQC/Falco, the **Per base sequence content** report typically returns a "Fail" status. This is expected because of Bisulfite Treatment, for a more detailed explanation [read this.](https://github.com/NonStickFryingPan/DNA-Methylation-Data-Analysis#qc-results-explanation)
 
 #### 1. Alignment (Mapping with bwameth)
 We mapped the imported dataset against the reference genome using **bwameth** (version 0.2.7). 
+
 <img width="700" alt="image" src="https://github.com/user-attachments/assets/9fa1a09a-f08d-44b8-82e9-f6935820acf9" />
+
 *   **Reference Genome:** Human (hg38full)
 *   **Library Type:** Paired-end (subset_1.fastq and subset_2.fastq)
 
@@ -47,14 +51,18 @@ We mapped the imported dataset against the reference genome using **bwameth** (v
 
 #### 2. Methylation Bias and Metric Extraction
 Using **MethylDackel**, we analyzed the distribution of methylation to identify possible biases.
+
 <img width="700" alt="image" src="https://github.com/user-attachments/assets/ea439aee-f6c8-4271-b483-aad3400cec0f" />
+
 *   **Methylation Bias (mbias):** The distribution of methylation is more or less equal across the reads. 
 *   **Trimming:** While a +- 5% variation is acceptable, we noted that to perfectly trim the reads, we would include only positions 0 to 145 for the first strand and 6 to 149 for the second.
 *   **Extraction:** We extracted CpG methylation fractions to create a methylation level plot.
 
 #### 3. Visualization of TSS and CpG Islands
 We visualized methylation levels around Transcription Start Sites (TSS). In gene promoters, DNA methylation is usually a repressive mark.
+
 <img width="700" alt="image" src="https://github.com/user-attachments/assets/8fccd6d5-6d65-44d3-9519-f08d3e192e8d" />
+
 *   **Tools Used:** `Wig/BedGraph-to-bigWig`, `computeMatrix`, and `plotProfile`.
 *   **Key Challenge (Naming Conventions):** We encountered an error where execution failed due to differing chromosome naming conventions (Ensembl uses "1" while UCSC uses "chr1"). We resolved this by using a mapping file to convert Ensembl names to UCSC format for compatibility with the hg38 reference.
 
@@ -62,8 +70,10 @@ We visualized methylation levels around Transcription Start Sites (TSS). In gene
 
 #### 4. Metilene (DMR Detection)
 We used **Metilene** to detect **Differentially Methylated Regions (DMRs)**, which is a necessary prerequisite for characterizing different epigenetic states. 
+
 <img width="700" alt="image" src="https://github.com/user-attachments/assets/6bc04375-e556-4cac-9792-b1f4c99de6d6" />
 <img width="700" alt="image" src="https://github.com/user-attachments/assets/0c4dc802-b02c-4a5f-bea4-b9fa80132780" />
+
 These plots show that the tumor sample (Group 2) is generally hypomethylated compared to the normal samples (Group 1). Additionally, these plots combine statistical significance with the mean methylation difference, helping us identify the most biologically relevant DMRs where the changes are most significant.
 
 ### EPIC Array (bio-learn)
