@@ -83,14 +83,5 @@ Compare different samples to find Differentially Methylated Regions (DMRs).
 # Output: DMR_Report.pdf # Identifies epigenetic state differences
 ```
 
-## Results (What to see)
-
-| Step | Expected Result |
-| :--- | :--- |
-| **Falco** | Failed sequence content; Red line (T) is high, Blue line (C) is near zero. |
-| **MethylDackel** | M-bias plots showing stable methylation across the read length. |
-| **plotProfile** | A "valley" shape; methylation usually drops at CpG islands/promoters. |
-| **Metilene** | Statistics on DMR length, CpG count, and q-values for differences. |
-
 ## Reference
 Official Tutorial: [Galaxy Training - DNA Methylation Sequencing](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/methylation-seq/tutorial.html)
