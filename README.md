@@ -77,16 +77,8 @@ We used **Metilene** to detect **Differentially Methylated Regions (DMRs)**, whi
 These plots show that the tumor sample (Group 2) is generally hypomethylated compared to the normal samples (Group 1). Additionally, these plots combine statistical significance with the mean methylation difference, helping us identify the most biologically relevant DMRs where the changes are most significant.
 
 ### EPIC Array (bio-learn)
-Using the `bio-learn` library, we analyzed the following:
 
-*   **Datasets:** **GSE40279** (Human Aging Rates Study) and **GSE41169** (Dutch Schizophrenia/Control Cohort).
-*   **Clocks Benchmarked:** Horvathv1, Horvathv2 (Skin & Blood), Hannum, PhenoAge, GrimAgeV1, GrimAgeV2, DunedinPACE, and Zhang.
-
-| Analysis Type | Description |
-| --- | --- |
-| **Correlation Matrix** | Shows how strongly different aging clocks agree with one another on biological age. |
-| **Deviation Heatmap** | Visualizes the "Epigenetic Noise" or the difference between Predicted Age and Chronological Age. |
-| **Prediction Plots** | Scatter plots comparing Chronological Age (X-axis) vs. Predicted Age (Y-axis) to evaluate clock accuracy. |
+> Under construction
 
 ## Glossary
 
