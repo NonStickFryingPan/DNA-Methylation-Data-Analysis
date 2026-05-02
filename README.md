@@ -1,68 +1,69 @@
 <div align="center">
 
-# 🧬 Epigenetic Aging Clocks & Methylation Analysis
-**Benchmarking biological age and exploring the breast cancer methylome**
+# 🧬 Epigenetic Aging & Methylome Analysis
+**Benchmarking aging clocks and processing WGBS data via Galaxy and Bio-learn**
 
-[![Library](https://img.shields.io/badge/Library-bio--learn-blue)](https://bio-learn.github.io/)
-[![Workflow](https://img.shields.io/badge/Workflow-Galaxy-orange)](https://usegalaxy.org/)
-[![License](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
+[![Galaxy](https://img.shields.io/badge/Platform-Galaxy-blue)](https://usegalaxy.org/)
+[![Bio-learn](https://img.shields.io/badge/Library-Bio--learn-green)](https://bio-learn.github.io/)
+[![Python](https://img.shields.io/badge/Language-Python-yellow)](https://www.python.org/)
 
-[Overview](#overview) · [What is Epigenetics?](#what-is-epigenetics) · [Results](#results) · [Glossary](#glossary) · [Resources](#resources)
+[Overview](#overview) · [Epigenetics](#what-is-epigenetics) · [WGBS Results](#wgbs) · [EPIC Array Results](#epic-array-bio-learn-1) · [Glossary](#glossary)
 
 </div>
 
 ## Overview
 
-In this repo, we explore epigenetics via a hands-on [Galaxy tutorial](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/methylation-seq/tutorial.html) and then we use [EPIC Array (bio-learn)](https://bio-learn.github.io/) to benchmark 8 epigenetic aging clocks across two EPIC array blood methylation datasets, including correlation matrices, age deviation heatmaps, predicted versus chronological age plots, MAE comparisons, and predicted age distribution analyses.
+In this repo, we explore epigenetics via a hands-on [Galaxy tutorial](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/methylation-seq/tutorial.html) and then use [EPIC Array (bio-learn)](https://bio-learn.github.io/) to benchmark 8 epigenetic aging clocks across two EPIC array blood methylation datasets. Our analysis includes correlation matrices, age deviation heatmaps, predicted versus chronological age plots, MAE (Mean Absolute Error) comparisons, and predicted age distribution analyses.
 
 ## What is Epigenetics?
 
-Nearly all cells in your body contain the same DNA, yet a brain cell and a skin cell look and act completely different. That’s because they don’t "use" the same parts of the DNA.
+Nearly all cells in your body have the same DNA, yet a brain cell and a skin cell look and act completely different. That’s because they don’t use the same parts of the DNA.
 
-Epigenetics is the system that controls which genes are turned on or off in different cells without changing the DNA sequence itself. It explains how one genome can produce many different cell types during development and how cells remain specialized over time.
+Epigenetics is basically the system that controls which genes are turned on or off in different cells, without changing the DNA itself. It helps explain how one genome can produce many different cell types during development and how cells stay specialized over time.
 
-This system is also influenced by external factors like diet, stress, and toxins, which can subtly change how genes are expressed without rewriting the genetic code.
+It is also influenced by things like diet, stress, and toxins, which can subtly change how genes are used without rewriting the genetic code.
 
-> **Note:** Think of how identical twins can develop noticeable biological differences over time because their epigenetic patterns "drift" based on their specific environments and lifestyles.
+> Think how identical DNA twins can still develop noticeable biological differences over time because their epigenetic patterns drift with environment and lifestyle.
 
-The primary mechanisms of epigenetic gene regulation include **DNA methylation**, **histone modifications**, and **chromatin remodeling**.
+DNA methylation, histone modifications, and chromatin remodeling are all mechanisms of epigenetic gene regulation.
 
 ## Results
 
-### WGBS (Whole Genome Bisulfite Sequencing)
-We applied a WGBS pipeline to breast cancer and normal breast tissue samples (based on Lin et al., 2015), processed through the Galaxy Training Network tutorial.
+### WGBS
+The Whole Genome Bisulfite Sequencing pipeline was applied to breast cancer and normal breast tissue samples from Lin et al. (2015), processed through the Galaxy Training Network methylation-seq tutorial. 
 
-#### QC Result: The "Successful" Fail
-During Quality Control (FastQC/Falco), our "Per base sequence content" report shows a **Fail** status. In a standard DNA experiment, this would be bad. However, in a methylation experiment, this is a sign of success. The high frequency of Thymine (T) and near-absence of Cytosine (C) proves that the Bisulfite conversion was successful.
+#### QC Result: The "Expected Fail"
+During the Quality Control phase using FastQC/Falco, the **Per base sequence content** report typically returns a "Fail" status. This is expected and actually indicates a successful experiment. 
 
----
+In a standard DNA sample, the distribution of A, C, T, and G is relatively even. However, in bisulfite-treated data, almost all unmethylated Cytosines (C) are converted to Thymines (T). This causes the "T" line (red) to spike to the top and the "C" line (blue) to drop to nearly zero. This imbalance triggers the "Fail" warning, but it confirms the chemical conversion was successful.
 
 ### EPIC Array (bio-learn)
-Using the `bio-learn` framework, we benchmarked the following models and datasets:
+Using the `bio-learn` library, we analyzed the following:
 
-**1. Selected Datasets:**
-*   **GSE40279:** Human Aging Rates Study (Blood samples).
-*   **GSE41169:** Large-scale Dutch cohort study.
+*   **Datasets:** **GSE40279** (Human Aging Rates Study) and **GSE41169** (Dutch Schizophrenia/Control Cohort).
+*   **Clocks Benchmarked:** Horvathv1, Horvathv2 (Skin & Blood), Hannum, PhenoAge, GrimAgeV1, GrimAgeV2, DunedinPACE, and Zhang.
 
-**2. Selected Aging Clocks:**
-*   **First Gen:** Horvathv1, Horvathv2, Hannum.
-*   **Second Gen:** PhenoAge, GrimAgeV1, GrimAgeV2.
-*   **Specialized:** DunedinPACE (Speed of aging), Zhang.
+| Analysis Type | Description |
+| --- | --- |
+| **Correlation Matrix** | Shows how strongly different aging clocks agree with one another on biological age. |
+| **Deviation Heatmap** | Visualizes the "Epigenetic Noise" or the difference between Predicted Age and Chronological Age. |
+| **Prediction Plots** | Scatter plots comparing Chronological Age (X-axis) vs. Predicted Age (Y-axis) to evaluate clock accuracy. |
 
 ## Glossary
 
 ### What are Methylomes?
 DNA is a giant sequence of letters (bases): **A, C, G, and T**. Sometimes, a tiny chemical "tag" called a **methyl group** sticks to the letter **C**.
 
-*   **Methylation:** The act of sticking that tag on the DNA.
-    *   Methylated genes are mostly switched **OFF**.
-    *   Unmethylated genes are mostly switched **ON**.
-    *   *Note: This is context-dependent and not a universal rule.*
-*   **Methylome:** The complete "map" of every single tag in a cell's DNA.
-    *   **1.0** = 100% methylation at a specific spot.
-    *   **0.0** = No methylation at that spot.
+- **Methylation:** The act of sticking that tag on the DNA.
+    - Methylated genes are **MOSTLY** switched **OFF**.
+    - Conversely, unmethylated genes are **MOSTLY** switched **ON**.
+    - This is not a universal rule; it’s context-dependent.
+- **Methylome:** The complete "map" of every single *tag* in a cell's DNA.
+    - **1** = 100% methylation at this spot.
+    - **0** = No methylation at this spot.
+    - Methylation is often fractional, not binary.
 
-**Visual Representation:**
+**Visual Representation of a Methylome:**
 ```text
     DNA STRAND:      A --- C --- G --- T --- C --- A --- G
                            |                 |
@@ -71,44 +72,67 @@ DNA is a giant sequence of letters (bases): **A, C, G, and T**. Sometimes, a tin
     METHYLOME MAP:   (Pos 2: YES)      (Pos 5: YES)
 ```
 
+**Example:** In a normal cell, only specific cytosines are methylated. In a **cancer cell**, the methylation pattern can change in two main ways:
+- **Hypermethylation:** (Too many methyl tags) Important genes (like tumor suppressors) get shut OFF.
+- **Hypomethylation:** (Too few methyl tags) Genes that should stay OFF become active.
+
 ### Differentially Methylated Regions (DMRs)
-DMRs are segments of DNA that show consistent and statistically significant differences in DNA methylation patterns between distinct biological samples, such as healthy tissue vs. cancer tissue.
+Differentially methylated regions are segments of DNA that show consistent and statistically significant differences in DNA methylation patterns between distinct biological samples, such as different tissues or disease states.
 
 ### CpG Sites
-A CpG site is a location in DNA where a Cytosine (C) is followed directly by a Guanine (G), linked by a Phosphate (p) backbone. These are the primary checkpoints where DNA methylation occurs. 
+A CpG site is a specific location in DNA where a cytosine (C) is directly followed by a guanine (G), linked through a phosphate backbone (that’s what the “p” stands for).
 
-### Hierarchical Clustering
-This is a method used to group breast cancer patients by the similarity of their "tag maps." It builds a tree-like structure (dendrogram) to show which patients have the most similar disease profiles.
+> These sites are important because they are the primary places where DNA methylation occurs.
 
-### EPIC Array (Beta Values)
-Unlike raw sequencing, the EPIC Array provides **processed data**.
-*   **Input:** Beta Values (0.0 to 1.0).
-*   **Format:** A matrix where rows are samples and columns are CpG sites.
+At a CpG site, the cytosine can receive a methyl group, which can influence whether nearby genes are active or silent. In this way, CpG sites function like regulatory checkpoints in the genome, helping control gene expression. When scientists study a methylome, they are essentially scanning across all CpG sites for hyper- or hypomethylation.
 
-| Sample ID | Age | CpG_Site_1 | CpG_Site_2 |
-| :--- | :--- | :--- | :--- |
-| Patient_01 | 45 | 0.82 | 0.10 |
-| Patient_02 | 62 | 0.79 | 0.12 |
+### "Hierarchical Clustering of Breast Cancer Methylomes"?
+This means grouping breast cancer patients by how similar their DNA methylation patterns are.
+- **Breast cancer methylomes:** DNA “tag maps” (methylation patterns) from different patients.
+- **Hierarchical clustering:** A method that **builds a tree** by grouping the most similar patients first.
 
-## QC Results: The Bisulfite Trick
+### EPIC Array Data Structure
+This uses processed data where the hard work of finding tags is already done.
+- **Input Type:** **Beta Values** (A table of numbers between 0 and 1).
+- **0.0** = No methylation; **1.0** = 100% methylation.
 
-DNA sequencing machines are "blind" to methylation; they only see A, C, G, and T. To make methylation visible, we use **Bisulfite Treatment**.
+| Sample ID | Age | CpG_Site_1 | CpG_Site_2 | CpG_Site_3 |
+| --- | --- | --- | --- | --- |
+| Patient_01 | 45 | 0.82 | 0.10 | 0.55 |
+| Patient_02 | 62 | 0.79 | 0.12 | 0.60 |
 
-### The Logic:
-We soak the DNA in Sodium Bisulfite. This chemical is "aggressive" toward unprotected Cytosines.
-*   **Rule 1:** If a **C** is "naked" (unmethylated), it turns into a **U** (which the computer reads as a **T**).
-*   **Rule 2:** If a **C** has a "shield" (a methyl tag), the chemical cannot hurt it. It stays a **C**.
+### QC Results Explanation
+DNA sequencing machines are "blind" to methylation. If a machine reads a DNA strand, it just sees **A, C, G, and T**. It cannot "see" the tiny chemical tags on the **C** letters.
 
-### The Outcome:
-1.  **Original DNA:** `G - A - C - T`
-2.  **Unmethylated Version:** Becomes `G - A - T - T` (C turned to T).
-3.  **Methylated Version:** Stays `G - A - C - T` (C stayed C).
+> To fix this, we use a chemical trick called **Bisulfite Treatment** before we put the DNA into the machine.
 
-By looking at the "Per base sequence content" plot and seeing the **Red Line (T)** shoot to the top and the **Blue Line (C)** drop to the bottom, we confirm that our chemical treatment worked!
+#### Bisulfite Treatment Trick
+Imagine you have two strands of DNA that look identical to a computer:
+1. **Strand A (Normal):** `G - A - C - T`
+2. **Strand B (Methylated):** `G - A - C* - T` (The `*` is the invisible methyl tag)
+
+If we sequence them normally, the computer says they are both just `GACT`. **We lose the information.**
+
+#### How Bisulfite Treatment Works:
+We soak the DNA in Sodium Bisulfite. This chemical is "aggressive" toward **unprotected** C's.
+- **Rule 1:** If a **C** is "naked" (unmethylated), the chemical attacks it and turns it into a **U** (which the sequencer reads as a **T**).
+- **Rule 2:** If a **C** has a "shield" (a methyl tag), the chemical can't hurt it. It stays a **C**.
+
+---
+
+#### The Result
+Look at what happens to those two strands after the treatment:
+1. **Imagine this is the strand:** `G - A - C - T`
+2. **Strand A (Normal):** The `C` had no shield. It becomes `T`.
+    - **New Sequence:** `G - A - T - T`
+3. **Strand B (Methylated):** The `C` had a shield. It stays `C`.
+    - **New Sequence:** `G - A - C - T`
+
+By comparing the treated sequence to the original, we can finally "see" the methylation. Since most C's in the body are unmethylated, the high concentration of T's in our results proves the treatment worked.
 
 ## Resources
 
-*   [Galaxy Training: DNA Methylation Analysis](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/methylation-seq/tutorial.html)
-*   [Galaxy Training: Introduction to DNA Methylation](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/introduction-dna-methylation/slides-plain.html)
-*   [Bio-learn Documentation](https://bio-learn.github.io/)
-*   [Bio-learn GEO Data Sources](https://bio-learn.github.io/data.html)
+*   [Galaxy Training Network: DNA Methylation data analysis](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/methylation-seq/tutorial.html)
+*   [Galaxy Training Network: Introduction to DNA Methylation](https://training.galaxyproject.org/training-material/topics/epigenetics/tutorials/introduction-dna-methylation/slides-plain.html)
+*   [Biolearn Documentation](https://bio-learn.github.io/)
+*   [Biolearn GEO Data Sources](https://bio-learn.github.io/data.html)
