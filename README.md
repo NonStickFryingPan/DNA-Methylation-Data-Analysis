@@ -17,9 +17,7 @@ In this repo, we explore epigenetics via a hands-on [Galaxy tutorial](https://tr
 
 ## What is Epigenetics?
 
-Nearly all cells in your body have the same DNA, yet a brain cell and a skin cell look and act completely different. That’s because they don’t use the same parts of the DNA.
-
-Epigenetics is basically the system that controls which genes are turned on or off in different cells, without changing the DNA itself. It helps explain how one genome can produce many different cell types during development and how cells stay specialized over time.
+Nearly all cells in your body have the same DNA, yet a brain cell and a skin cell look and act completely different. That’s because they don’t use the same parts of the DNA. Epigenetics is basically the system that controls which genes are turned on or off in different cells, without changing the DNA itself. It helps explain how one genome can produce many different cell types during development and how cells stay specialized over time.
 
 It is also influenced by things like diet, stress, and toxins, which can subtly change how genes are used without rewriting the genetic code.
 
