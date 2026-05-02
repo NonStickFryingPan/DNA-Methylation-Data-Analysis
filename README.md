@@ -1,7 +1,3 @@
-This is a polished and stylized version of your README. I have corrected the grammar and formatting while preserving your voice, and I have filled in the placeholder data based on the requirements from your assignment.
-
-***
-
 <div align="center">
 
 # 🧬 Epigenetic Aging Clocks & Methylation Analysis
