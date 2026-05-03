@@ -225,14 +225,12 @@ As you get older, your methylation patterns **change in a predictable way**.
 
 Some CpG sites gain methyl groups. Some lose them. And this happens **consistently** across people.
 
-<aside>
-💡
-
-Age 20:   C  C  [C]  C  C     ← some sites methylated
-Age 40:   C  C  [C]  C  [C]   ← more sites methylated
-Age 60:   [C] C  [C]  C  [C]  ← even more sites methylate
-
-</aside>
+> 💡 **Visualizing the change:**
+> ```text
+> Age 20:   C  C  [C]  C  C     ← some sites methylated
+> Age 40:   C  C  [C]  C  [C]   ← more sites methylated
+> Age 60:   [C] C  [C]  C  [C]  ← even more sites methylated
+> ```
 
 This is so consistent that scientists can **look at your methylation pattern and predict your age**.
 
@@ -240,19 +238,16 @@ This is so consistent that scientists can **look at your methylation pattern and
 
 An **epigenetic clock** is a machine learning model. It looks at methylation levels at specific CpG sites and **predicts biological age**.
 
-<aside>
-💡
-
-**`Input:`** Methylation % at each CpG site (for one person)
-
-CpG_1   CpG_2   CpG_3  ...  CpG_850000
- 0.71    0.33    0.28   ...    0.91
-
-        ↓  (ML model)
-
-**`Output:`** Predicted biological age → e.g. 43.5 years
-
-</aside>
+> 💡 **How it works:**
+> 
+> **Input:** Methylation % at each CpG site (for one person)
+> ```text
+> CpG_1   CpG_2   CpG_3  ...  CpG_850000
+>  0.71    0.33    0.28   ...    0.91
+> 
+>         ↓  (ML model)
+> ```
+> **Output:** Predicted biological age → e.g. 43.5 years
 
 ### Two generations of clocks
 
