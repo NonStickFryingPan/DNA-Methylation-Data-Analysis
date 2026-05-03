@@ -72,9 +72,71 @@ We used **Metilene** to detect **Differentially Methylated Regions (DMRs)**, whi
 
 These plots show that the tumor sample (Group 2) is generally hypomethylated compared to the normal samples (Group 1). Additionally, these plots combine statistical significance with the mean methylation difference, helping us identify the most biologically relevant DMRs where the changes are most significant.
 
+---
+
 ### EPIC Array (bio-learn)
 
-> Under construction
+*Highly recommended that you read the glossary first.*
+
+Using the `bio-learn` library, we analyzed two datasets (**GSE120307** and **GSE41169**) across various aging clocks.
+
+#### Correlation Matrix
+
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/323d25e7-7b87-43eb-aba1-3277fb3dba51" />
+
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/5836e1e7-cae3-4d92-b4c4-1bc8d7e44b5b" />
+
+This plot shows how much each pair of clocks agree with each other. A value close to 1.0 means the two clocks rank people the same way. A value close to 0 means they are measuring completely different things.
+
+In both datasets, Horvathv1, Hannum, Lin, PhenoAge, and YingCausAge all form a tight group with correlations above 0.87. This makes sense because they are all trying to predict age from the same type of methylation signal, just trained on slightly different data.
+
+**DunedinPACE sits apart from all other clocks.** Its correlations with age-based clocks are only 0.22 to 0.43. This is expected — DunedinPACE does not predict age in years. It predicts how fast you are aging right now. It is measuring something fundamentally different.
+
+**Zhang_10 also sits apart**, with correlations of 0.36 to 0.60. It only uses 10 CpG sites, which is far fewer than the other clocks. Less information = weaker agreement with others.
+
+In GSE41169 (the larger dataset with 95 samples), all correlations are higher and more consistent than in GSE120307 (only 34 samples). Small datasets produce noisier, less reliable results.
+
+#### MAE Comparison
+
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/42e83c90-6e06-4897-a949-8869b89c0db3" />
+
+MAE stands for Mean Absolute Error. It tells you on average how many years off a clock's prediction is. **Lower is better.**
+
+| Clock | GSE120307 MAE | GSE41169 MAE |
+| --- | --- | --- |
+| Horvathv1 | ~4 years | ~3 years |
+| Lin | ~5 years | ~6 years |
+| PhenoAge | ~5 years | ~6 years |
+| Hannum | ~6 years | ~3 years |
+| YingCausAge | ~6 years | ~7 years |
+| YingDamAge | ~29 years | ~10 years |
+| Zhang_10 | ~38 years | ~34 years |
+
+**Horvathv1 wins on both datasets.** It is the most accurate clock here despite being the oldest (2013). This is why it remains the standard benchmark in the field.
+
+**Zhang_10 has catastrophic error** (~34–38 years off on average). It was designed to predict mortality risk, not chronological age, and its 10-CpG design is too minimal for accurate age estimation.
+
+**YingDamAge error drops dramatically** from 29 years on GSE120307 to 10 years on GSE41169. This is purely a sample size effect — 34 samples is too few to get stable predictions from a complex clock.
+
+#### Predicted Age Distribution
+
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/e318ecdf-a979-4c21-b073-157e0ac22669" />
+
+This boxplot shows the spread of each clock's predictions across all samples. The red dashed line is the mean real age of the cohort.
+
+Clocks whose boxes center near the red line are well calibrated for this dataset. Horvathv1, Hannum, and Lin all sit close to the red line in both datasets.
+
+**Zhang_10 predicts near zero or negative ages on both datasets.** This is a calibration failure — the clock was not designed for this type of data and produces nonsensical outputs.
+
+YingDamAge has a very large spread in GSE120307 (boxes ranging from -25 to +45 years) but tightens considerably in GSE41169. More samples = more stable predictions.
+
+#### Overall Takeaway
+
+The most consistent and accurate clocks across both datasets are **Horvathv1, Hannum, Lin, and PhenoAge**. They agree with each other, track real age well, and have low error. Zhang_10 and YingDamAge underperform here. Zhang_10 is a mortality clock forced into an age prediction task. YingDamAge needs larger datasets to be stable.
+
+**Sample size matters a lot.** Almost every clock performed better on GSE41169 (95 samples) than on GSE120307 (34 samples). When evaluating epigenetic clocks, small cohorts produce unreliable results.
+
+---
 
 ## Glossary
 
@@ -156,6 +218,64 @@ Look at what happens to those two strands after the treatment:
     - **New Sequence:** `G - A - C - T`
 
 By comparing the treated sequence to the original, we can finally "see" the methylation. Since most C's in the body are unmethylated, the high concentration of T's in our results proves the treatment worked.
+
+### What happens to methylation as we age?
+
+As you get older, your methylation patterns **change in a predictable way**.
+
+Some CpG sites gain methyl groups. Some lose them. And this happens **consistently** across people.
+
+<aside>
+💡
+
+Age 20:   C  C  [C]  C  C     ← some sites methylated
+Age 40:   C  C  [C]  C  [C]   ← more sites methylated
+Age 60:   [C] C  [C]  C  [C]  ← even more sites methylate
+
+</aside>
+
+This is so consistent that scientists can **look at your methylation pattern and predict your age**.
+
+### What is an Epigenetic Clock?
+
+An **epigenetic clock** is a machine learning model. It looks at methylation levels at specific CpG sites and **predicts biological age**.
+
+<aside>
+💡
+
+**`Input:`** Methylation % at each CpG site (for one person)
+
+CpG_1   CpG_2   CpG_3  ...  CpG_850000
+ 0.71    0.33    0.28   ...    0.91
+
+        ↓  (ML model)
+
+**`Output:`** Predicted biological age → e.g. 43.5 years
+
+</aside>
+
+### Two generations of clocks
+
+|  | 1st Generation | 2nd Generation |
+| --- | --- | --- |
+| **Models** | Horvath, Hannum | GrimAge, PhenoAge, DunedinPACE |
+| **Trained on** | Chronological age | Blood biomarkers + mortality data |
+| **Predicts** | “How old are you?” | “How fast are you aging?”; “What is your risk of death?” |
+
+### Epigenetic Age Acceleration (EAA)
+
+If your **methylation-predicted age > your real age**, that gap is called **Epigenetic Age Acceleration**.
+
+- **Example 1:**
+    - Chronological age: 40
+    - Predicted age: 48
+    - EAA: +8 ← your cells are aging FASTER
+- **Example 2:**
+    - Chronological age: 40
+    - Predicted age: 35
+    - EAA: -5 ← your cells are aging SLOWER (good!)
+
+> A **positive EAA** is linked to higher risk of disease and earlier death.
 
 ## Resources
 
