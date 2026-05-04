@@ -7,7 +7,7 @@
 [![Bio-learn](https://img.shields.io/badge/Library-Bio--learn-green)](https://bio-learn.github.io/)
 [![Python](https://img.shields.io/badge/Language-Python-yellow)](https://www.python.org/)
 
-[Overview](#overview) · [Epigenetics](#what-is-epigenetics) · [WGBS Results](#wgbs) · [EPIC Array Results](#epic-array-bio-learn) · [Glossary](#glossary)
+[Overview](#overview) · [Epigenetics](#what-is-epigenetics) · [WGBS Results](#wgbs) · [EPIC Array Results](#epic-array-bio-learn) · [Glossary](#glossary) · [Visual](https://nonstickfryingpan.github.io/DNA-Methylation-Data-Analysis/)
 
 </div>
 
