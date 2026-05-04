@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Epigenetic Aging & Methylome Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-elevated: #111111;
+    --bg-card: #161616;
+    --text: #e8e8e8;
+    --text-muted: #888888;
+    --accent: #4fc3f7;
+    --accent-dim: rgba(79,195,247,0.15);
+    --red: #ef5350;
+    --green: #66bb6a;
+    --orange: #ffa726;
+    --yellow: #ffee58;
+    --purple: #ab47bc;
+    --radius: 12px;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .presentation {
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+
+  /* Top bar */
+  .top-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 32px;
+    pointer-events: none;
+  }
+  .step-counter {
+    pointer-events: all;
+    font-size: 13px; color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .step-counter:hover { background: var(--bg-card); color: var(--text); }
+  .progress-bar-track {
+    position: fixed; top: 0; left: 0; right: 0; height: 2px;
+    background: rgba(255,255,255,0.06);
+    z-index: 101;
+  }
+  .progress-bar-fill {
+    height: 100%; background: var(--accent);
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Slide container */
+  .slides-wrapper {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide {
+    position: absolute;
+    max-width: 900px; width: 100%;
+    padding: 80px 40px 100px;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    pointer-events: none;
+    will-change: opacity, transform;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+  .slide.exit-up {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+
+  /* Typography */
+  h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 16px; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 20px; color: #fff; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 12px; letter-spacing: -0.01em; }
+  p, li { font-size: clamp(0.95rem, 1.5vw, 1.1rem); line-height: 1.7; color: var(--text); }
+  .muted { color: var(--text-muted); font-size: 0.95rem; }
+  .accent { color: var(--accent); }
+  .hero-num { font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--accent); margin: 16px 0; }
+
+  /* Cards / badges */
+  .cards-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
+  .card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius); padding: 20px; transition: border-color 0.3s; }
+  .card:hover { border-color: rgba(79,195,247,0.3); }
+  .card-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .card-title { font-weight: 600; font-size: 1rem; margin-bottom: 6px; color: #fff; }
+  .card-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin: 20px 0; }
+  .stat-item { background: rgba(255,255,255,0.03); border-radius: var(--radius); padding: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.08); }
+  .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); margin-bottom: 8px;}
+  .stat-value.green { color: var(--green); }
+  .stat-value.red { color: var(--red); }
+  .stat-label { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4;}
+
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin: 4px 0; }
+  .badge-red { background: rgba(239,83,80,0.15); color: var(--red); }
+  .badge-green { background: rgba(102,187,106,0.15); color: var(--green); }
+  .badge-blue { background: var(--accent-dim); color: var(--accent); }
+
+  /* Insight box */
+  .insight-box { background: var(--accent-dim); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin: 16px 0; font-size: 0.95rem; line-height: 1.6; }
+  .insight-box.warning { background: rgba(239,83,80,0.1); border-left-color: var(--red); }
+  .insight-box.success { background: rgba(102,187,106,0.1); border-left-color: var(--green); }
+
+  /* Highlight box */
+  .highlight-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 20px; margin: 16px 0; }
+
+  /* Chart containers & SVG */
+  .chart-container { position: relative; width: 100%; height: 340px; margin: 16px 0; }
+  .diagram-container { margin: 16px 0; display: flex; justify-content: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius); padding: 20px; }
+  .diagram-container svg { max-width: 100%; height: auto; }
+
+  /* Flow Steps */
+  .flow-row { display: flex; justify-content: space-between; align-items: center; margin: 24px 0; background: rgba(255,255,255,0.02); padding: 20px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.05); }
+  .flow-node { text-align: center; flex: 1; }
+  .flow-node .val { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .flow-node .lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;}
+  .flow-arrow { color: rgba(255,255,255,0.2); font-size: 1.5rem; padding: 0 10px; }
+
+  /* Lists & Layouts */
+  .steps-list { margin: 12px 0; list-style-type: none; }
+  .steps-list li { padding: 8px 0; padding-left: 12px; border-left: 2px solid rgba(255,255,255,0.08); margin-left: 8px; position: relative; }
+  .steps-list li::before { content: ''; position: absolute; left: -5px; top: 15px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .steps-list li strong { color: #fff; }
+  .split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 20px 0; align-items: center; }
+  
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+  .pc-box { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 20px; font-size: 0.95rem; line-height: 1.6; }
+  .pc-box .pc-label { font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .pc-box.pros .pc-label { color: var(--green); }
+  .pc-box.cons .pc-label { color: var(--red); }
+  .pc-box ul { margin-left: 20px; margin-top: 10px; }
+  .pc-box li { padding: 4px 0; font-size: 0.9rem; }
+
+  /* Bottom nav & Jump Menu */
+  .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 20px 32px; pointer-events: none; }
+  .nav-btn { pointer-events: all; padding: 10px 24px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.25s; backdrop-filter: blur(10px); user-select: none; }
+  .nav-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+  .nav-btn:active { transform: scale(0.97); }
+  .nav-btn.primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+  .nav-btn.primary:hover { background: #6dd0fa; border-color: #6dd0fa; }
+  .nav-btn.hidden { opacity: 0; pointer-events: none; }
+
+  .jump-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-elevated); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; z-index: 200; display: none; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); min-width: 320px; }
+  .jump-menu.open { display: block; }
+  .jump-menu h3 { margin-bottom: 12px; font-size: 0.95rem; color: var(--accent); }
+  .jump-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .jump-item { padding: 8px 12px; border-radius: 8px; font-size: 0.78rem; color: var(--text-muted); cursor: pointer; transition: all 0.2s; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .jump-item:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .jump-item.active { background: var(--accent-dim); color: var(--accent); }
+  .jump-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; display: none; }
+  .jump-overlay.open { display: block; }
+
+  /* Helpers */
+  .subtitle { font-size: clamp(1rem, 2vw, 1.25rem); color: var(--text-muted); margin-bottom: 8px; font-weight: 400; }
+  .hook { font-size: clamp(0.88rem, 1.3vw, 1rem); color: var(--accent); margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .centered { text-align: center; }
+  .mt-12 { margin-top: 12px; }
+  .mt-20 { margin-top: 20px; }
+  .mb-8 { margin-bottom: 8px; }
+  
+  /* Code blocks */
+  pre { background: #111; padding: 16px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; color: #a5d6ff; font-family: monospace; font-size: 0.9rem;}
+
+  @media (max-width: 700px) {
+    .slide { padding: 70px 20px 100px; }
+    .cards-row, .split-row, .pros-cons, .jump-grid { grid-template-columns: 1fr; }
+    .flow-row { flex-direction: column; gap: 10px; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div class="presentation">
+
+  <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+
+  <div class="top-bar">
+    <div></div>
+    <div class="step-counter" id="stepCounter" onclick="toggleJumpMenu()">Slide 1 of 15</div>
+  </div>
+
+  <div class="slides-wrapper">
+
+    <!-- STEP 1: TITLE -->
+    <div class="slide active" data-step="1">
+      <div class="centered">
+        <div class="muted mb-8" style="font-size:0.85rem; letter-spacing:0.08em; text-transform:uppercase;">Bioinformatics & Machine Learning</div>
+        <h1 style="color:#fff;">Epigenetic Aging &<br>Methylome Analysis</h1>
+        <div class="subtitle">Benchmarking aging clocks and processing WGBS data</div>
+        <div class="hook">Galaxy Pipelines • Bio-learn • Machine Learning</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: CONCEPTS 1 -->
+    <div class="slide" data-step="2">
+      <h2>What is Epigenetics?</h2>
+      <p style="margin-bottom:24px;">Nearly all cells in your body have the exact same DNA, yet a brain cell and a skin cell look and act completely different. Why? <strong>Because they don’t use the same parts of the DNA manual.</strong></p>
+      
+      <div class="cards-row">
+        <div class="card">
+          <div class="card-icon">🎛️</div>
+          <div class="card-title">The Control System</div>
+          <div class="card-body">Epigenetics is the system that controls which genes are turned ON or OFF in different cells, without rewriting the actual A-T-C-G genetic code.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🌪️</div>
+          <div class="card-title">Environmental Drift</div>
+          <div class="card-body">Diet, stress, and toxins subtly change how genes are used. This is why identical twins develop biological differences over time.</div>
+        </div>
+      </div>
+      <div class="insight-box mt-20">
+        <strong>Key Mechanisms:</strong> DNA methylation, histone modifications, and chromatin remodeling are the physical ways the body achieves this regulation.
+      </div>
+    </div>
+
+    <!-- STEP 3: METHYLOMES -->
+    <div class="slide" data-step="3">
+      <h2>What are Methylomes?</h2>
+      <p>Sometimes, a tiny chemical "tag" called a <strong>methyl group</strong> sticks to the letter <strong>C</strong> (Cytosine) in your DNA. A <strong>Methylome</strong> is the complete map of every single tag in a cell's DNA.</p>
+      
+      <div class="diagram-container">
+        <svg width="500" height="150" viewBox="0 0 500 150">
+          <!-- DNA Line -->
+          <line x1="50" y1="100" x2="450" y2="100" stroke="#888" stroke-width="4"/>
+          <!-- Letters -->
+          <text x="60" y="130" fill="#fff" font-size="16" font-weight="bold">A</text>
+          <text x="130" y="130" fill="#fff" font-size="16" font-weight="bold">C</text>
+          <text x="200" y="130" fill="#fff" font-size="16" font-weight="bold">G</text>
+          <text x="270" y="130" fill="#fff" font-size="16" font-weight="bold">T</text>
+          <text x="340" y="130" fill="#fff" font-size="16" font-weight="bold">C</text>
+          <text x="410" y="130" fill="#fff" font-size="16" font-weight="bold">A</text>
+          
+          <!-- Connectors -->
+          <line x1="135" y1="100" x2="135" y2="60" stroke="#4fc3f7" stroke-width="3" stroke-dasharray="4"/>
+          <line x1="345" y1="100" x2="345" y2="60" stroke="#4fc3f7" stroke-width="3" stroke-dasharray="4"/>
+          
+          <!-- Methyl Groups -->
+          <circle cx="135" cy="50" r="16" fill="#161616" stroke="#4fc3f7" stroke-width="3"/>
+          <text x="135" y="55" text-anchor="middle" fill="#4fc3f7" font-size="10" font-weight="bold">CH3</text>
+          <circle cx="345" cy="50" r="16" fill="#161616" stroke="#4fc3f7" stroke-width="3"/>
+          <text x="345" y="55" text-anchor="middle" fill="#4fc3f7" font-size="10" font-weight="bold">CH3</text>
+        </svg>
+      </div>
+
+      <div class="split-row">
+        <div>
+          <h3 style="color: var(--red);">Methylated (Tagged)</h3>
+          <p class="muted">Genes are MOSTLY switched <strong>OFF</strong>. The physical tag blocks the machinery that reads the DNA.</p>
+        </div>
+        <div>
+          <h3 style="color: var(--green);">Unmethylated (Naked)</h3>
+          <p class="muted">Genes are MOSTLY switched <strong>ON</strong>. The DNA is accessible and active.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: CPG & CANCER -->
+    <div class="slide" data-step="4">
+      <h2>CpG Sites & Disease</h2>
+      <p>A <strong>CpG site</strong> is a specific location where a Cytosine (C) is directly followed by a Guanine (G). These are the primary regulatory checkpoints in the genome.</p>
+
+      <div class="insight-box warning mt-20">
+        In a normal cell, only specific Cytosines are methylated. In a <strong>cancer cell</strong>, the methylation pattern goes haywire in two main ways:
+      </div>
+
+      <div class="flow-row">
+        <div class="flow-node">
+          <div class="val" style="color: var(--red);">Hypermethylation</div>
+          <div class="lbl">Too many methyl tags. Important genes (like tumor suppressors) get permanently shut OFF.</div>
+        </div>
+        <div class="flow-arrow">vs</div>
+        <div class="flow-node">
+          <div class="val" style="color: var(--orange);">Hypomethylation</div>
+          <div class="lbl">Too few methyl tags. Genes that should stay OFF become actively dangerous.</div>
+        </div>
+      </div>
+      <p class="muted centered">Regions where this happens consistently are called <strong>Differentially Methylated Regions (DMRs)</strong>.</p>
+    </div>
+
+    <!-- STEP 5: EPIGENETIC CLOCKS -->
+    <div class="slide" data-step="5">
+      <h2>Epigenetic Clocks</h2>
+      <p>As you get older, your methylation patterns change in a highly predictable way. Machine learning models, called <strong>Epigenetic Clocks</strong>, look at these patterns to predict your biological age.</p>
+
+<pre>
+Age 20:   C  C  [CH3]  C  C       ← some sites methylated
+Age 40:   C  C  [CH3]  C  [CH3]   ← more sites methylated
+Age 60: [CH3] C [CH3]  C  [CH3]   ← even more sites methylated
+</pre>
+
+      <div class="cards-row mt-20">
+        <div class="card">
+          <div class="card-icon">⏱️</div>
+          <div class="card-title">1st Gen Clocks</div>
+          <div class="card-body">Trained strictly on chronological age. (e.g., Horvath, Hannum). They answer: <em>"How old are you?"</em></div>
+        </div>
+        <div class="card">
+          <div class="card-icon">❤️‍🩹</div>
+          <div class="card-title">2nd Gen Clocks</div>
+          <div class="card-body">Trained on blood biomarkers & mortality data. (e.g., GrimAge, PhenoAge). They answer: <em>"What is your risk of death?"</em></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6: DATA INTRO & THE PROBLEM -->
+    <div class="slide" data-step="6">
+      <h2>The "Invisible" Problem</h2>
+      <p>How do we actually read these tags? DNA sequencing machines are "blind" to methylation. If a machine reads a DNA strand, it just sees A, C, G, and T. It cannot see the tiny chemical tags.</p>
+
+      <div class="split-row mt-20">
+        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.08);">
+          <h3 style="color: var(--accent);">Strand A (Normal)</h3>
+          <div style="font-family: monospace; font-size: 1.5rem; letter-spacing: 5px; text-align: center; margin: 20px 0;">G-A-<span style="color: var(--red);">C</span>-T</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.08);">
+          <h3 style="color: var(--accent);">Strand B (Methylated)</h3>
+          <div style="font-family: monospace; font-size: 1.5rem; letter-spacing: 5px; text-align: center; margin: 20px 0;">G-A-<span style="color: var(--green);">C*</span>-T</div>
+        </div>
+      </div>
+
+      <div class="insight-box warning mt-20">
+        If we sequence them normally, the computer says they are both just <code>GACT</code>. We completely lose the methylation information!
+      </div>
+    </div>
+
+    <!-- STEP 7: THE BISULFITE TRICK -->
+    <div class="slide" data-step="7">
+      <h2>The Bisulfite Treatment Trick</h2>
+      <p>Before sequencing, we soak the DNA in Sodium Bisulfite. This chemical is highly aggressive toward <strong>unprotected</strong> C's.</p>
+
+      <div class="diagram-container mt-20">
+        <svg width="600" height="180" viewBox="0 0 600 180">
+          <text x="150" y="30" text-anchor="middle" fill="#fff" font-weight="bold">Original DNA</text>
+          <text x="450" y="30" text-anchor="middle" fill="#fff" font-weight="bold">After Bisulfite</text>
+          
+          <!-- Normal C -->
+          <text x="150" y="80" text-anchor="middle" fill="#888" font-size="14">Unmethylated (Naked)</text>
+          <text x="150" y="105" text-anchor="middle" fill="#fff" font-size="20" font-family="monospace">G-A-<tspan fill="#ef5350">C</tspan>-T</text>
+          
+          <path d="M 250 95 L 350 95" stroke="#fff" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrowWhite)"/>
+          <text x="300" y="85" text-anchor="middle" fill="#fff" font-size="10">Chemical attacks C</text>
+
+          <text x="450" y="105" text-anchor="middle" fill="#fff" font-size="20" font-family="monospace">G-A-<tspan fill="#ef5350" font-weight="bold">T</tspan>-T</text>
+
+          <!-- Methylated C -->
+          <text x="150" y="140" text-anchor="middle" fill="#888" font-size="14">Methylated (Shielded)</text>
+          <text x="150" y="165" text-anchor="middle" fill="#fff" font-size="20" font-family="monospace">G-A-<tspan fill="#66bb6a">C*</tspan>-T</text>
+          
+          <path d="M 250 155 L 350 155" stroke="#fff" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrowWhite)"/>
+          <text x="300" y="145" text-anchor="middle" fill="#fff" font-size="10">Shield protects C</text>
+
+          <text x="450" y="165" text-anchor="middle" fill="#fff" font-size="20" font-family="monospace">G-A-<tspan fill="#66bb6a" font-weight="bold">C</tspan>-T</text>
+
+          <defs>
+            <marker id="arrowWhite" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#fff"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <p class="centered mt-12">By comparing the treated sequence to a reference genome, we can clearly see which C's were protected (methylated).</p>
+    </div>
+
+    <!-- STEP 8: THE TWO PLATFORMS -->
+    <div class="slide" data-step="8">
+      <h2>Two Types of Data Analysis</h2>
+      <p>Our assignment was split into two parts, dealing with two very different stages of methylation data.</p>
+      
+      <div class="cards-row">
+        <div class="card">
+          <div class="card-icon">🧬</div>
+          <div class="card-title">Part 1: Galaxy (WGBS)</div>
+          <div class="card-body">
+            <strong>Input:</strong> Raw DNA sequence (FASTQ)<br>
+            <strong>Task:</strong> Find where the tags are by aligning the bisulfite-treated reads.<br>
+            <strong>Output:</strong> Files showing methylation percentage across the genome.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <div class="card-title">Part 2: Bio-learn (EPIC)</div>
+          <div class="card-body">
+            <strong>Input:</strong> Processed table of numbers (Beta Values, 0 to 1).<br>
+            <strong>Task:</strong> Use machine learning clocks on known CpG sites.<br>
+            <strong>Output:</strong> Predicted biological age and clock accuracy.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 9: WGBS PIPELINE -->
+    <div class="slide" data-step="9">
+      <h2>Part 1: The WGBS Pipeline</h2>
+      <p>We applied Whole Genome Bisulfite Sequencing to breast cancer & normal tissue samples using the Galaxy platform.</p>
+
+      <div class="flow-row">
+        <div class="flow-node">
+          <div class="val">Mapping</div>
+          <div class="lbl">bwameth vs hg38 reference</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="val">Extraction</div>
+          <div class="lbl">MethylDackel (CpG fractions)</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="val">Vis / DMRs</div>
+          <div class="lbl">plotProfile & Metilene</div>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <strong>Hierarchical Clustering:</strong> In cancer studies like this, researchers group patient methylomes by similarity to build a "tree" structure, grouping the most similar patients first to identify cancer subtypes.
+      </div>
+    </div>
+
+    <!-- STEP 10: QC EXPECTED FAIL -->
+    <div class="slide" data-step="10">
+      <h2>QC Result: The "Expected Fail"</h2>
+      <p>When running FastQC on our data, the "Per base sequence content" failed immediately. <strong>This is a massive success.</strong></p>
+
+      <div class="highlight-box" style="border-color: rgba(102,187,106,0.3); background: rgba(102,187,106,0.05);">
+        <h3 style="color: var(--green);">Why failing is passing</h3>
+        <p>In standard DNA, A ≈ T and C ≈ G. But remember the Bisulfite Trick! Almost every unmethylated 'C' in the sample was chemically converted into a 'T'.</p>
+        <ul style="margin-top: 10px; margin-left: 20px;">
+          <li>The <strong>T line (red)</strong> shoots up to the top.</li>
+          <li>The <strong>C line (blue)</strong> drops to nearly zero.</li>
+        </ul>
+        <p class="mt-12">The software thinks the machine is broken, but we know the chemical conversion worked perfectly.</p>
+      </div>
+    </div>
+
+    <!-- STEP 11: METILENE RESULTS -->
+    <div class="slide" data-step="11">
+      <h2>Metilene DMR Detection Results</h2>
+      <p>We compared Group 1 (Normal) against Group 2 (Tumor). Metilene outputs several plots, but two are critical.</p>
+
+      <div class="split-row mt-20">
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: var(--radius);">
+          <h3 style="color: var(--accent);">Plot 1: The Histogram</h3>
+          <p class="muted mt-12">Shows the global trend. A massive hump between -0.5 and -0.1 indicates the tumor sample is broadly <strong>hypomethylated</strong> (losing methyl tags) compared to normal tissue.</p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: var(--radius);">
+          <h3 style="color: var(--accent);">Plot 4: Volcano Plot</h3>
+          <p class="muted mt-12">Plots <i>q-value</i> (Significance) vs <i>Mean Difference</i> (Effect Size). Points in the lower far-left or far-right represent the most trustworthy and biologically impactful DMRs.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 12: BIOLEARN SETUP -->
+    <div class="slide" data-step="12">
+      <h2>Part 2: EPIC Array Benchmarking</h2>
+      <p>We shifted to processed data (Beta values) and used Python's <code>bio-learn</code> library to benchmark Epigenetic Clocks.</p>
+      
+      <div class="stat-row">
+        <div class="stat-item">
+          <div class="stat-value">2</div>
+          <div class="stat-label">Datasets<br>(GSE40279 & GSE41169)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">8</div>
+          <div class="stat-label">Epigenetic Clocks / Models benchmarked</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" style="color: var(--orange);">129</div>
+          <div class="stat-label">Total patient samples across datasets</div>
+        </div>
+      </div>
+
+      <p class="centered muted mt-20">We evaluated: Horvathv1, Horvathv2, Hannum, PhenoAge, GrimAgeV1, GrimAgeV2, DunedinPACE, and Zhang.</p>
+    </div>
+
+    <!-- STEP 13: CORRELATION MATRIX -->
+    <div class="slide" data-step="13">
+      <h2>Results: Clock Correlation</h2>
+      <p>We generated correlation matrices to see how strongly the different clocks agreed with one another.</p>
+
+      <ul class="steps-list mt-20">
+        <li><strong>The Consensus:</strong> Horvathv1, Hannum, Lin, and PhenoAge form a tight group with correlations > 0.87. They rank people similarly.</li>
+        <li><strong>The Outlier (DunedinPACE):</strong> Correlations were low (0.22 - 0.43). This is expected! DunedinPACE predicts the <i>pace of aging</i> (a speedometer), not chronological age (an odometer).</li>
+        <li><strong>The Failure (Zhang_10):</strong> Shows weak agreement. It only uses 10 CpG sites, proving that minimal information equals weaker reliability.</li>
+      </ul>
+
+      <div class="insight-box success mt-20">
+        <strong>Sample Size Matters:</strong> In GSE41169 (95 samples), all correlations were higher and more consistent than in GSE120307 (34 samples).
+      </div>
+    </div>
+
+    <!-- STEP 14: MAE & DEVIATION -->
+    <div class="slide" data-step="14">
+      <h2>Results: Mean Absolute Error (MAE)</h2>
+      <p>MAE tells us how many years OFF the clock's prediction is compared to chronological age. Lower is better.</p>
+
+      <div class="chart-container mt-20" style="height: 280px;">
+        <canvas id="chartMAE"></canvas>
+      </div>
+
+      <p class="muted centered mt-12">Horvathv1 is the most accurate (~3-4 years off). Zhang_10 has catastrophic error (~38 years off) because it was designed for mortality risk, not absolute age estimation.</p>
+    </div>
+
+    <!-- STEP 15: CONCLUSION -->
+    <div class="slide" data-step="15">
+      <h2 class="centered">Summary & Takeaways</h2>
+      
+      <div class="cards-row mt-20">
+        <div class="card" style="text-align: center; padding: 30px 20px;">
+          <div class="card-icon mb-8">🏆</div>
+          <div class="card-title">The Gold Standard</div>
+          <div class="card-body">Horvathv1, Hannum, and PhenoAge are the most reliable clocks for age prediction, tracking chronological age tightly with low error.</div>
+        </div>
+        <div class="card" style="text-align: center; padding: 30px 20px;">
+          <div class="card-icon mb-8">⚠️</div>
+          <div class="card-title">Epigenetic Age Acceleration</div>
+          <div class="card-body">If predicted age > real age, you have positive EAA. Your cells are aging faster, which is linked to higher disease risk.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slides-wrapper -->
+
+  <!-- Bottom nav -->
+  <div class="nav-bar">
+    <button class="nav-btn hidden" id="btnPrev" onclick="prevStep()">← Prev Slide</button>
+    <button class="nav-btn primary" id="btnNext" onclick="nextStep()">Next Slide →</button>
+  </div>
+
+  <!-- Jump menu -->
+  <div class="jump-overlay" id="jumpOverlay" onclick="toggleJumpMenu()"></div>
+  <div class="jump-menu" id="jumpMenu">
+    <h3>Jump to Slide</h3>
+    <div class="jump-grid" id="jumpGrid"></div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const TOTAL = 15;
+  let current = 1;
+  let chartsInitialized = {};
+
+  const slides = document.querySelectorAll('.slide');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const stepCounter = document.getElementById('stepCounter');
+  const progressFill = document.getElementById('progressFill');
+
+  // Chart.js global defaults
+  Chart.defaults.color = '#888';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+  // Build jump menu
+  const stepLabels =[
+    'Title & Hook', 
+    'What is Epigenetics?', 
+    'What are Methylomes?', 
+    'CpG Sites & Disease', 
+    'Epigenetic Clocks', 
+    'The Invisible Problem', 
+    'The Bisulfite Trick', 
+    'WGBS vs EPIC Array', 
+    'Part 1: WGBS Pipeline', 
+    'QC Result: Expected Fail', 
+    'Metilene DMR Results', 
+    'Part 2: EPIC Setup', 
+    'Results: Correlation', 
+    'Results: MAE Error', 
+    'Summary & Takeaways'
+  ];
+  
+  const jumpGrid = document.getElementById('jumpGrid');
+  for (let i = 1; i <= TOTAL; i++) {
+    const el = document.createElement('div');
+    el.className = 'jump-item';
+    el.textContent = i + '. ' + stepLabels[i - 1];
+    el.dataset.step = i;
+    el.onclick = function() { goToStep(i); toggleJumpMenu(); };
+    jumpGrid.appendChild(el);
+  }
+
+  function updateUI() {
+    stepCounter.textContent = 'Slide ' + current + ' of ' + TOTAL;
+    progressFill.style.width = ((current / TOTAL) * 100) + '%';
+    btnPrev.classList.toggle('hidden', current === 1);
+    if (current === TOTAL) {
+      btnNext.textContent = '← Restart';
+    } else {
+      btnNext.textContent = 'Next Slide →';
+    }
+    jumpGrid.querySelectorAll('.jump-item').forEach(el => {
+      el.classList.toggle('active', parseInt(el.dataset.step) === current);
+    });
+  }
+
+  function goToStep(n) {
+    if (n < 1 || n > TOTAL || n === current) return;
+    const dir = n > current ? 1 : -1;
+    const oldSlide = slides[current - 1];
+    const newSlide = slides[n - 1];
+
+    oldSlide.classList.remove('active');
+    if (dir > 0) oldSlide.classList.add('exit-up');
+    else oldSlide.classList.remove('exit-up');
+
+    oldSlide.style.transform = dir > 0 ? 'translateY(-24px)' : 'translateY(24px)';
+    oldSlide.style.opacity = '0';
+
+    newSlide.style.transition = 'none';
+    newSlide.style.transform = dir > 0 ? 'translateY(24px)' : 'translateY(-24px)';
+    newSlide.style.opacity = '0';
+    newSlide.classList.remove('exit-up');
+
+    void newSlide.offsetWidth; // Force reflow
+
+    newSlide.style.transition = '';
+    newSlide.classList.add('active');
+    newSlide.style.transform = '';
+    newSlide.style.opacity = '';
+
+    current = n;
+    updateUI();
+    initChartsForStep(n);
+  }
+
+  window.nextStep = function() {
+    if (current === TOTAL) goToStep(1);
+    else goToStep(current + 1);
+  };
+  window.prevStep = function() { goToStep(current - 1); };
+
+  document.addEventListener('keydown', function(e) {
+    if (document.getElementById('jumpMenu').classList.contains('open')) {
+      if (e.key === 'Escape') toggleJumpMenu();
+      return;
+    }
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextStep(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
+  });
+
+  window.toggleJumpMenu = function() {
+    document.getElementById('jumpMenu').classList.toggle('open');
+    document.getElementById('jumpOverlay').classList.toggle('open');
+  };
+
+  // ---- Charts ----
+  function initChartsForStep(step) {
+    if (step === 14 && !chartsInitialized[14]) { initMAEChart(); chartsInitialized[14] = true; }
+  }
+
+  function initMAEChart() {
+    new Chart(document.getElementById('chartMAE'), {
+      type: 'bar',
+      data: {
+        labels:['Horvathv1', 'PhenoAge', 'Hannum', 'YingDamAge', 'Zhang_10'],
+        datasets:[
+          {
+            label: 'GSE120307 (34 samples)',
+            data: [4, 5, 6, 29, 38],
+            backgroundColor: 'rgba(79,195,247,0.7)',
+            borderRadius: 4
+          },
+          {
+            label: 'GSE41169 (95 samples)',
+            data: [3, 6, 3, 10, 34],
+            backgroundColor: 'rgba(102,187,106,0.7)',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { 
+          legend: { position: 'top', labels: { color: '#e8e8e8' } }, 
+          title: { display: true, text: 'Mean Absolute Error (Years)', color: '#e8e8e8', font: { size: 14, weight: '600' } } 
+        },
+        scales: {
+          y: { 
+            beginAtZero: true,
+            title: { display: true, text: 'Years Off', color: '#888' }, 
+            grid: { color: 'rgba(255,255,255,0.04)' } 
+          },
+          x: { grid: { display: false }, ticks: { color: '#e8e8e8' } }
+        },
+        animation: { duration: 1200, easing: 'easeOutQuart' }
+      }
+    });
+  }
+
+  // Init
+  updateUI();
+})();
+</script>
+</body>
+</html>
